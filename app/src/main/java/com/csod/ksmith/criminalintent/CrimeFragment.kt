@@ -12,7 +12,6 @@ import kotlinx.android.synthetic.main.fragment_crime.*
 
 class CrimeFragment:Fragment() {
     private var crime:Crime = Crime()
-//    private var titleField: EditText? = null  FROM SYNTHETIC
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,8 +28,6 @@ class CrimeFragment:Fragment() {
 
         crime_date.text = crime.date
         crime_date.isEnabled = false
-
-//        titleField = v.findViewById(crime_title) FROM SYNTHETIC
 
         crime_title.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
