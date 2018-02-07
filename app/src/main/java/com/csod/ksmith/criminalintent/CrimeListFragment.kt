@@ -30,7 +30,8 @@ class CrimeListFragment : Fragment() {
 
 
     private class CrimeHolder(inflater: LayoutInflater, parent: ViewGroup)
-        : RecyclerView.ViewHolder(inflater.inflate(R.layout.list_item_crime, parent, false)) {
+        : RecyclerView.ViewHolder(inflater.inflate(R.layout.list_item_crime,
+            parent, false)) {
 
         private val titleTextView:TextView = itemView.findViewById(R.id.crime_title)
         private val dateTextView:TextView = itemView.findViewById(R.id.crime_date)
@@ -68,9 +69,7 @@ class CrimeListFragment : Fragment() {
 
         }
 
-        override fun getItemCount(): Int {
-            return crimes.size
-        }
+        override fun getItemCount() = crimes.size
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
             when (holder?.itemViewType) {
