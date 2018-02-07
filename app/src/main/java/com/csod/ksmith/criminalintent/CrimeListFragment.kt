@@ -43,18 +43,49 @@ class CrimeListFragment : Fragment() {
         }
     }
 
-    private inner class CrimeAdapter(val crimes: List<Crime>) : RecyclerView.Adapter<CrimeHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): CrimeHolder {
+    private class CrimeHolder2(inflater: LayoutInflater, parent: ViewGroup)
+        : RecyclerView.ViewHolder(inflater.inflate(R.layout.list_item_crime_police, parent, false)) {
+
+        private val titleTextView:TextView = itemView.findViewById(R.id.crime_title)
+        private val dateTextView:TextView = itemView.findViewById(R.id.crime_date)
+        private var crime:Crime? = null
+
+        fun bind(crime:Crime) {
+            this.crime = crime
+            titleTextView.setText(crime.title)
+            dateTextView.setText(crime.date)
+        }
+    }
+
+    private inner class CrimeAdapter(val crimes: List<Crime>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
             val layoutInflater = LayoutInflater.from(activity)
-            return CrimeHolder(layoutInflater, parent!!) // what to do here
+
+            when (viewType) {
+                0 -> return CrimeHolder(layoutInflater, parent!!) // what to do here
+                else -> return CrimeHolder2(layoutInflater, parent!!)
+            }
+
         }
 
         override fun getItemCount(): Int {
             return crimes.size
         }
 
-        override fun onBindViewHolder(holder: CrimeHolder?, position: Int) {
-            holder?.bind(crimes.get(position))
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+            when (holder?.itemViewType) {
+                0 -> (holder as CrimeHolder).bind(crimes.get(position))
+                else -> (holder as CrimeHolder2).bind(crimes.get(position))
+            }
         }
+
+        override fun getItemViewType(position: Int): Int {
+            if (crimes.get(position).requiredPolice) {
+                return 1
+            } else {
+                return 0
+            }
+        }
+
     }
 }
