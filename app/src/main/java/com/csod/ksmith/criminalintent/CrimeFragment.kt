@@ -26,7 +26,7 @@ class CrimeFragment:Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        crime_date.text = crime.date
+        crime_date.text = crime.date.toString()
         crime_date.isEnabled = false
 
         crime_title.addTextChangedListener(object: TextWatcher {

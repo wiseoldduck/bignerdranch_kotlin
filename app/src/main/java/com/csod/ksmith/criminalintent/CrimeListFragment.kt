@@ -40,7 +40,7 @@ class CrimeListFragment : Fragment() {
         fun bind(crime:Crime) {
             this.crime = crime
             titleTextView.setText(crime.title)
-            dateTextView.setText(crime.date)
+            dateTextView.setText(crime.date.toString())
         }
     }
 
@@ -54,7 +54,7 @@ class CrimeListFragment : Fragment() {
         fun bind(crime:Crime) {
             this.crime = crime
             titleTextView.setText(crime.title)
-            dateTextView.setText(crime.date)
+            dateTextView.setText(crime.date.toString())
         }
     }
 
