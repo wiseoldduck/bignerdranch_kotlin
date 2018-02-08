@@ -4,13 +4,12 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.RecyclerView.Adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_crime_list.*
-import kotlinx.android.synthetic.main.list_item_crime.*
 
 class CrimeListFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -29,32 +28,19 @@ class CrimeListFragment : Fragment() {
     }
 
 
-    private class CrimeHolder(inflater: LayoutInflater, parent: ViewGroup)
-        : RecyclerView.ViewHolder(inflater.inflate(R.layout.list_item_crime,
+    private class CrimeHolder(type: Int, inflater: LayoutInflater, parent: ViewGroup)
+        : RecyclerView.ViewHolder(inflater.inflate(
+            if (type == 0) R.layout.list_item_crime else R.layout.list_item_crime_police,
             parent, false)) {
 
-        private val titleTextView:TextView = itemView.findViewById(R.id.crime_title)
-        private val dateTextView:TextView = itemView.findViewById(R.id.crime_date)
-        private var crime:Crime? = null
+        private val titleTextView: TextView? = itemView.findViewById(R.id.crime_title)
+        private val dateTextView: TextView? = itemView.findViewById(R.id.crime_date)
+        private val solvedImageView: ImageView? = itemView.findViewById(R.id.crime_solved)
 
-        fun bind(crime:Crime) {
-            this.crime = crime
-            titleTextView.setText(crime.title)
-            dateTextView.setText(crime.date.toString())
-        }
-    }
-
-    private class CrimeHolder2(inflater: LayoutInflater, parent: ViewGroup)
-        : RecyclerView.ViewHolder(inflater.inflate(R.layout.list_item_crime_police, parent, false)) {
-
-        private val titleTextView:TextView = itemView.findViewById(R.id.crime_title)
-        private val dateTextView:TextView = itemView.findViewById(R.id.crime_date)
-        private var crime:Crime? = null
-
-        fun bind(crime:Crime) {
-            this.crime = crime
-            titleTextView.setText(crime.title)
-            dateTextView.setText(crime.date.toString())
+        fun bind(crime: Crime) {
+            titleTextView?.setText(crime.title)
+            dateTextView?.setText(crime.date.toString())
+            solvedImageView?.visibility = if (crime.solved) View.VISIBLE else View.INVISIBLE
         }
     }
 
@@ -62,20 +48,14 @@ class CrimeListFragment : Fragment() {
         override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
             val layoutInflater = LayoutInflater.from(activity)
 
-            when (viewType) {
-                0 -> return CrimeHolder(layoutInflater, parent!!) // what to do here
-                else -> return CrimeHolder2(layoutInflater, parent!!)
-            }
+            return CrimeHolder(viewType, layoutInflater, parent!!) // what to do here
 
         }
 
         override fun getItemCount() = crimes.size
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-            when (holder?.itemViewType) {
-                0 -> (holder as CrimeHolder).bind(crimes.get(position))
-                else -> (holder as CrimeHolder2).bind(crimes.get(position))
-            }
+            (holder as CrimeHolder).bind(crimes.get(position))
         }
 
         override fun getItemViewType(position: Int): Int {
