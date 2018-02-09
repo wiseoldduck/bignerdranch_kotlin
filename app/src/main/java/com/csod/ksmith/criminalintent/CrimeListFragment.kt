@@ -1,5 +1,6 @@
 package com.csod.ksmith.criminalintent
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -10,6 +11,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_crime_list.*
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 class CrimeListFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -27,8 +31,12 @@ class CrimeListFragment : Fragment() {
         // (because that sure seems more right in .kt at least)
     }
 
+    override fun onResume() {
+        super.onResume()
+        crime_recycler_view.adapter.notifyDataSetChanged()
+    }
 
-    private class CrimeHolder(type: Int, inflater: LayoutInflater, parent: ViewGroup)
+    private inner class CrimeHolder(type: Int, inflater: LayoutInflater, parent: ViewGroup)
         : RecyclerView.ViewHolder(inflater.inflate(
             if (type == 0) R.layout.list_item_crime else R.layout.list_item_crime_police,
             parent, false)) {
@@ -36,11 +44,22 @@ class CrimeListFragment : Fragment() {
         private val titleTextView: TextView? = itemView.findViewById(R.id.crime_title)
         private val dateTextView: TextView? = itemView.findViewById(R.id.crime_date)
         private val solvedImageView: ImageView? = itemView.findViewById(R.id.crime_solved)
+        private var crime: Crime? = null
 
         fun bind(crime: Crime) {
+            this.crime = crime
             titleTextView?.setText(crime.title)
-            dateTextView?.setText(crime.date.toString())
+
+            dateTextView?.setText(SimpleDateFormat("EEEE, MMM dd, yyyy", Locale.US).format(crime.date))
             solvedImageView?.visibility = if (crime.solved) View.VISIBLE else View.INVISIBLE
+
+            itemView.setOnClickListener {
+                activity?.let {
+                    val i: Intent = CrimeActivity.newIntent(it, crime.id)
+                    startActivity(i)
+                }
+            }
+
         }
     }
 
