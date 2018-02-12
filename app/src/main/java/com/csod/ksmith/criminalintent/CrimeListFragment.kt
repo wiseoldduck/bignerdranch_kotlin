@@ -20,6 +20,10 @@ class CrimeListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_crime_list, container, false)
+
+        if (savedInstanceState != null) {
+            subtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,17 +34,26 @@ class CrimeListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         crime_recycler_view.layoutManager = LinearLayoutManager(activity)
-        crime_recycler_view.adapter = CrimeAdapter(CrimeLab.crimes)
+        updateUI()
     }
 
     private fun updateUI() {
-        // BNR set up the crime_cycler_view.adapter here: I set the adapter in onViewCreated
-        // (because that sure seems more right in .kt at least)
+        if (crime_recycler_view.adapter != null) {
+            crime_recycler_view.adapter.notifyDataSetChanged()
+        } else {
+            crime_recycler_view.adapter = CrimeAdapter(CrimeLab.crimes)
+        }
+        updateSubtitle()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(SAVED_SUBTITLE_VISIBLE, subtitleVisible)
     }
 
     override fun onResume() {
         super.onResume()
-        crime_recycler_view.adapter.notifyDataSetChanged()
+        updateUI()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -128,5 +141,9 @@ class CrimeListFragment : Fragment() {
             }
         }
 
+    }
+
+    companion object {
+        val SAVED_SUBTITLE_VISIBLE = "subtitle"
     }
 }
