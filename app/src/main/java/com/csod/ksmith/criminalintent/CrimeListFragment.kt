@@ -3,6 +3,7 @@ package com.csod.ksmith.criminalintent
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
@@ -14,6 +15,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class CrimeListFragment : Fragment() {
+
+    var subtitleVisible: Boolean = false
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_crime_list, container, false)
     }
@@ -42,20 +46,41 @@ class CrimeListFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater?.inflate(R.menu.fragment_crime_list, menu)
+
+        menu?.findItem(R.id.show_subtitle)?.setTitle(if (subtitleVisible) R.string.hide_subtitle else R.string.show_subtitle)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when(item?.itemId) {
+        return when (item?.itemId) {
             R.id.new_crime -> {
-                CrimeLab.crimes.add(Crime())
+                val crime = Crime()
+                CrimeLab.crimes.add(crime)
+                startActivity(CrimePagerActivity.newIntent(activity!!, crime.id))
+                true
+            }
+            R.id.show_subtitle -> {
+                subtitleVisible = !subtitleVisible
+                activity?.invalidateOptionsMenu()
+                updateSubtitle()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
+    private fun updateSubtitle() {
+        val count = CrimeLab.crimes.count()
+        val subtitle = if (subtitleVisible) {
+            getString(R.string.subtitle_format, count)
+        } else {
+            null
+        }
+
+        (activity as AppCompatActivity).getSupportActionBar()?.subtitle = subtitle
+    }
+
     private inner class CrimeHolder(type: Int, inflater: LayoutInflater, parent: ViewGroup)
-`        : RecyclerView.ViewHolder(inflater.inflate(
+        : RecyclerView.ViewHolder(inflater.inflate(
             if (type == 0) R.layout.list_item_crime else R.layout.list_item_crime_police,
             parent, false)) {
 
