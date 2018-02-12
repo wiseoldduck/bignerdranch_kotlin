@@ -5,9 +5,7 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_crime_list.*
@@ -18,6 +16,11 @@ import java.util.*
 class CrimeListFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_crime_list, container, false)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,8 +39,23 @@ class CrimeListFragment : Fragment() {
         crime_recycler_view.adapter.notifyDataSetChanged()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater?.inflate(R.menu.fragment_crime_list, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when(item?.itemId) {
+            R.id.new_crime -> {
+                CrimeLab.crimes.add(Crime())
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private inner class CrimeHolder(type: Int, inflater: LayoutInflater, parent: ViewGroup)
-        : RecyclerView.ViewHolder(inflater.inflate(
+`        : RecyclerView.ViewHolder(inflater.inflate(
             if (type == 0) R.layout.list_item_crime else R.layout.list_item_crime_police,
             parent, false)) {
 
@@ -55,7 +73,7 @@ class CrimeListFragment : Fragment() {
 
             itemView.setOnClickListener {
                 activity?.let {
-                    val i: Intent = CrimeActivity.newIntent(it, crime.id)
+                    val i: Intent = CrimePagerActivity.newIntent(it, crime.id)
                     startActivity(i)
                 }
             }
