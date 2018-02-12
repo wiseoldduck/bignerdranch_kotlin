@@ -19,11 +19,15 @@ class CrimeListFragment : Fragment() {
     var subtitleVisible: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_crime_list, container, false)
+        val v = inflater.inflate(R.layout.fragment_crime_list, container, false)
+
+        CrimeLab.createDatabase(activity!!)
 
         if (savedInstanceState != null) {
             subtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE)
         }
+
+        return v
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
