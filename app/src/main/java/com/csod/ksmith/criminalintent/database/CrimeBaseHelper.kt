@@ -18,7 +18,8 @@ class CrimeBaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL("create table ${CrimeDbSchema.CrimeTable.NAME} (_id integer primary key autoincrement," +
                 "${CrimeDbSchema.Cols.UUID}, ${CrimeDbSchema.Cols.TITLE}," +
-                "${CrimeDbSchema.Cols.DATE}, ${CrimeDbSchema.Cols.SOLVED})")
+                "${CrimeDbSchema.Cols.DATE}, ${CrimeDbSchema.Cols.SOLVED}," +
+                "${CrimeDbSchema.Cols.SUSPECT})")
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
