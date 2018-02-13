@@ -10,7 +10,6 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_crime_list.*
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -21,7 +20,7 @@ class CrimeListFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v = inflater.inflate(R.layout.fragment_crime_list, container, false)
 
-        CrimeLab.createDatabase(activity!!)
+        CrimeLab.initInstance(activity!!)
 
         if (savedInstanceState != null) {
             subtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE)

@@ -5,14 +5,18 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.provider.MediaStore
 import android.support.v4.app.Fragment
+import android.support.v4.content.FileProvider
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.csod.ksmith.criminalintent.thirdparty.safeLet
 import kotlinx.android.synthetic.main.fragment_crime.*
+import java.io.File
 import java.util.*
 
 class CrimeFragment : Fragment() {
@@ -23,6 +27,7 @@ class CrimeFragment : Fragment() {
         CrimeLab.getCrime(crimeId)!!
     }
 
+    private var photoFile: File? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -82,6 +87,32 @@ class CrimeFragment : Fragment() {
                 (activity?.packageManager?.resolveActivity(pickContact,
                         PackageManager.MATCH_DEFAULT_ONLY) != null)
 
+        val captureImage = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        crime_camera.isEnabled = (captureImage.resolveActivity(activity?.packageManager) != null)
+        photoFile = CrimeLab.getPhotoFile(crime)
+        crime_camera.setOnClickListener({
+            val activity = activity
+            val photoFile = photoFile
+            if (activity != null && photoFile != null) {
+
+                    val uri = FileProvider.getUriForFile(activity, "com.csod.ksmith.criminalintent.fileprovider",
+                            photoFile)
+
+                    captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+                    val cameraActivities = activity.packageManager.queryIntentActivities(captureImage,
+                            PackageManager.MATCH_DEFAULT_ONLY)
+
+
+                    for (cameraActivity in cameraActivities) {
+                        activity.grantUriPermission(cameraActivity.activityInfo.packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    }
+
+                    startActivityForResult(captureImage, REQUEST_PHOTO)
+            }
+
+        })
+        updatePhotoView()
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -114,11 +145,20 @@ class CrimeFragment : Fragment() {
                 c.moveToFirst()
                 val suspect = c.getString(0)
                 crime.suspect = suspect
-                crime_suspect.setText(suspect)
+                crime_suspect.text = suspect
             } finally {
                 c?.close()
             }
 
+        } else if (requestCode == REQUEST_PHOTO) {
+            safeLet(activity, photoFile) { activity, photoFile ->
+                val uri = FileProvider.getUriForFile(activity, "com.csod.ksmith.criminalintent.fileprovider",
+                        photoFile)
+
+                activity.revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+                updatePhotoView()
+            }
         }
     }
 
@@ -137,12 +177,25 @@ class CrimeFragment : Fragment() {
         return getString(R.string.crime_report, crime.title, dateString, solvedString, suspect)
     }
 
+    fun updatePhotoView() {
+
+        val photoFile = photoFile
+
+        if (photoFile == null || !photoFile.exists()) {
+            crime_photo.setImageDrawable(null)
+        } else {
+            val bitmap = PictureUtils.getScaledBitmap(photoFile.path, activity!!)
+            crime_photo.setImageBitmap(bitmap)
+        }
+    }
+
     companion object {
 
         const val ARG_CRIME_ID = "crime_id"
         const val DIALOG_DATE = "DialogDate"
-        const val REQUEST_CONTACT = 1
         const val REQUEST_DATE = 0
+        const val REQUEST_CONTACT = 1
+        const val REQUEST_PHOTO = 2
 
         fun newInstance(crimeId: UUID): CrimeFragment {
             val args = Bundle()

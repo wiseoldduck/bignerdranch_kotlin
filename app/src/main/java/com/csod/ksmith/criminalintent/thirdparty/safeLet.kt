@@ -1,4 +1,4 @@
-package com.csod.ksmith.criminalintent
+package com.csod.ksmith.criminalintent.thirdparty
 
 // https://stackoverflow.com/questions/35513636/multiple-variable-let-in-kotlin
 

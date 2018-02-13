@@ -7,4 +7,8 @@ data class Crime(var title:String = "", var date:Date = Date(), var solved:Boole
                  val requiredPolice: Boolean = false, var suspect:String? = null,
                  val id: UUID = UUID.randomUUID()) {
 
+    val photoFilename:String get(){
+        return "IMG_${id.toString()}.jpg"
+    }
+
 }

@@ -3,15 +3,17 @@ package com.csod.ksmith.criminalintent
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import com.csod.ksmith.criminalintent.database.CrimeBaseHelper
+import java.io.File
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 object CrimeLab {
+    lateinit var filesDir:File
+    lateinit var database:SQLiteDatabase
+
     var crimes:MutableList<Crime> = mutableListOf()
-    var database:SQLiteDatabase? = null
 
-
-    fun createDatabase(context: Context) {
+    fun initInstance(context:Context) {
+        filesDir = context.filesDir
         database = CrimeBaseHelper(context).writableDatabase
     }
 
@@ -20,4 +22,9 @@ object CrimeLab {
             it.id == id
         }
     }
+
+    fun getPhotoFile(crime:Crime):File {
+        return File(filesDir, crime.photoFilename)
+    }
+
 }
