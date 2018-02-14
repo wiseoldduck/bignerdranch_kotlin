@@ -1,5 +1,8 @@
 package com.csod.ksmith.criminalintent
 
+import android.app.Activity
+import android.content.ComponentCallbacks
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -13,9 +16,15 @@ import kotlinx.android.synthetic.main.fragment_crime_list.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 class CrimeListFragment : Fragment() {
 
+    interface Callbacks {
+        fun onCrimeSelected(crime:Crime)
+    }
+
     var subtitleVisible: Boolean = false
+    var callbacks: Callbacks? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v = inflater.inflate(R.layout.fragment_crime_list, container, false)
@@ -40,15 +49,6 @@ class CrimeListFragment : Fragment() {
         updateUI()
     }
 
-    private fun updateUI() {
-        if (crime_recycler_view.adapter != null) {
-            crime_recycler_view.adapter.notifyDataSetChanged()
-        } else {
-            crime_recycler_view.adapter = CrimeAdapter(CrimeLab.crimes)
-        }
-        updateSubtitle()
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(SAVED_SUBTITLE_VISIBLE, subtitleVisible)
@@ -71,7 +71,8 @@ class CrimeListFragment : Fragment() {
             R.id.new_crime -> {
                 val crime = Crime()
                 CrimeLab.crimes.add(crime)
-                startActivity(CrimePagerActivity.newIntent(activity!!, crime.id))
+                updateUI()
+                callbacks?.onCrimeSelected(crime)
                 true
             }
             R.id.show_subtitle -> {
@@ -84,6 +85,18 @@ class CrimeListFragment : Fragment() {
         }
     }
 
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        (context as? Callbacks)?.let {
+            callbacks = it
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        callbacks = null
+    }
+
     private fun updateSubtitle() {
         val count = CrimeLab.crimes.count()
         val subtitle = if (subtitleVisible) {
@@ -93,6 +106,15 @@ class CrimeListFragment : Fragment() {
         }
 
         (activity as AppCompatActivity).getSupportActionBar()?.subtitle = subtitle
+    }
+
+    public fun updateUI() {
+        if (crime_recycler_view.adapter != null) {
+            crime_recycler_view.adapter.notifyDataSetChanged()
+        } else {
+            crime_recycler_view.adapter = CrimeAdapter(CrimeLab.crimes)
+        }
+        updateSubtitle()
     }
 
     private inner class CrimeHolder(type: Int, inflater: LayoutInflater, parent: ViewGroup)
@@ -114,8 +136,7 @@ class CrimeListFragment : Fragment() {
 
             itemView.setOnClickListener {
                 activity?.let {
-                    val i: Intent = CrimePagerActivity.newIntent(it, crime.id)
-                    startActivity(i)
+                    callbacks?.onCrimeSelected(crime)
                 }
             }
 

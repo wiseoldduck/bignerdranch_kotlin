@@ -27,4 +27,8 @@ object CrimeLab {
         return File(filesDir, crime.photoFilename)
     }
 
+    fun updateCrime(crime: Crime) {
+        // no-op without database 🤷‍
+    }
+
 }

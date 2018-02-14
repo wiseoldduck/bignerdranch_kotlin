@@ -9,8 +9,7 @@ import android.support.v4.app.FragmentStatePagerAdapter
 import kotlinx.android.synthetic.main.activity_crime_pager.*
 import java.util.*
 
-class CrimePagerActivity : AppCompatActivity() {
-
+class CrimePagerActivity : AppCompatActivity(), CrimeFragment.Callbacks {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crime_pager)
@@ -33,6 +32,11 @@ class CrimePagerActivity : AppCompatActivity() {
         }
 
     }
+
+    override fun onCrimeUpdated(crime: Crime) {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 
     companion object {
         val EXTRA_CRIME_ID = "com.csod.ksmith.criminalintent.crime_id"

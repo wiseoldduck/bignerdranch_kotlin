@@ -1,6 +1,7 @@
 package com.csod.ksmith.criminalintent
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -20,24 +21,9 @@ import java.io.File
 import java.util.*
 
 class CrimeFragment : Fragment() {
-    private val crime: Crime by lazy {
 
-        val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
-
-        CrimeLab.getCrime(crimeId)!!
-    }
-
-    private var photoFile: File? = null
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
-        return inflater.inflate(R.layout.fragment_crime, container, false)
-    }
-
-    private val pickContact: Intent by lazy {
-        val i = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-//        i.addCategory(Intent.CATEGORY_HOME) uncomment to test isEnabled on crime_suspect button
-        i
+    interface Callbacks {
+        fun onCrimeUpdated(crime: Crime)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -63,6 +49,7 @@ class CrimeFragment : Fragment() {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 crime.title = p0.toString()
+                updateCrime()
             }
 
         })
@@ -81,7 +68,10 @@ class CrimeFragment : Fragment() {
         })
 
         crime_solved.isChecked = crime.solved
-        crime_solved.setOnCheckedChangeListener { _, p1 -> crime.solved = p1 }
+        crime_solved.setOnCheckedChangeListener { _, isChecked ->
+            crime.solved = isChecked
+            updateCrime()
+        }
 
         crime_suspect.isEnabled =
                 (activity?.packageManager?.resolveActivity(pickContact,
@@ -95,24 +85,29 @@ class CrimeFragment : Fragment() {
             val photoFile = photoFile
             if (activity != null && photoFile != null) {
 
-                    val uri = FileProvider.getUriForFile(activity, "com.csod.ksmith.criminalintent.fileprovider",
-                            photoFile)
+                val uri = FileProvider.getUriForFile(activity, "com.csod.ksmith.criminalintent.fileprovider",
+                        photoFile)
 
-                    captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-                    val cameraActivities = activity.packageManager.queryIntentActivities(captureImage,
-                            PackageManager.MATCH_DEFAULT_ONLY)
+                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+                val cameraActivities = activity.packageManager.queryIntentActivities(captureImage,
+                        PackageManager.MATCH_DEFAULT_ONLY)
 
 
-                    for (cameraActivity in cameraActivities) {
-                        activity.grantUriPermission(cameraActivity.activityInfo.packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                    }
+                for (cameraActivity in cameraActivities) {
+                    activity.grantUriPermission(cameraActivity.activityInfo.packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                }
 
-                    startActivityForResult(captureImage, REQUEST_PHOTO)
+                startActivityForResult(captureImage, REQUEST_PHOTO)
             }
 
         })
         updatePhotoView()
 
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
+        return inflater.inflate(R.layout.fragment_crime, container, false)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -126,6 +121,7 @@ class CrimeFragment : Fragment() {
             d?.let {
                 crime.date = it
                 crime_date.text = d.toString()
+                updateCrime()
             }
         } else if (requestCode == REQUEST_CONTACT && data != null) {
             val url = data.data
@@ -145,6 +141,7 @@ class CrimeFragment : Fragment() {
                 c.moveToFirst()
                 val suspect = c.getString(0)
                 crime.suspect = suspect
+                updateCrime()
                 crime_suspect.text = suspect
             } finally {
                 c?.close()
@@ -157,9 +154,20 @@ class CrimeFragment : Fragment() {
 
                 activity.revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
+                updateCrime()
                 updatePhotoView()
             }
         }
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        callbacks = context as? Callbacks
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        callbacks = null
     }
 
     fun getCrimeReport(): String {
@@ -187,6 +195,28 @@ class CrimeFragment : Fragment() {
             val bitmap = PictureUtils.getScaledBitmap(photoFile.path, activity!!)
             crime_photo.setImageBitmap(bitmap)
         }
+    }
+
+    private val crime: Crime by lazy {
+
+        val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
+
+        CrimeLab.getCrime(crimeId)!!
+    }
+
+    private var photoFile: File? = null
+
+    private val pickContact: Intent by lazy {
+        val i = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+//        i.addCategory(Intent.CATEGORY_HOME) uncomment to test isEnabled on crime_suspect button
+        i
+    }
+
+    private var callbacks: CrimeFragment.Callbacks? = null
+
+    private fun updateCrime() {
+        CrimeLab.updateCrime(crime)
+        callbacks?.onCrimeUpdated(crime)
     }
 
     companion object {
